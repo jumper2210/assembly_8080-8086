@@ -1,0 +1,167 @@
+	  
+	 ORG 800H  
+CODESEG  
+	 LXI H,NAPIS ; addres lancucha znakow  
+	 RST 3 ;wydruk lancucha  
+	 MVI A,10 ;do nastepnej linii  
+	 RST 1 ;wydruk znaku z A  
+	 MVI A,13 ;na poczatek linii  
+	 RST 1 ;wydruk znaku z A  
+
+;pierwsza cyfra              
+	 RST 2 ;odczyt znaku z klawiatury  
+	 CALL EKSPERT ;wywolanie podprogramu EKSPERT  
+
+;powrot z podprogramu                 
+	 RLC ;przesuniecie cykliczne  
+	 RLC ; winduje znak  
+	 RLC ; do starszego polbajtu(nibble)  
+	 RLC  
+	 MOV D,A ;znak zapisany w D w starszym polbajcie(nible)  
+
+;druga cyfra                                                     
+	 RST 2 ;odczyt znaku z klawiatury  
+	 CALL EKSPERT  
+
+;powrot z podprogramu                 
+	 ADD D ;skladam liczbe wcalosc  
+	 MOV E,A ;zapisana liczba hex dwucyfrowa  
+	 MVI D,0  
+	 LXI H,HEX
+         RST 3
+         MVI A,10  
+	 RST 1  
+	 MVI A,13  
+	 RST 1  
+
+
+;poczatek czesci bin  
+;128                                    
+	 MVI A,128  
+	 ANA E  
+	 CNZ JEDEN  
+	 CZ ZERO  
+;64                                  
+	 MVI A,64  
+	 ANA E  
+	 CNZ JEDEN  
+	 CZ ZERO  
+;32                                  
+	 MVI A,32  
+	 ANA E  
+	 CNZ JEDEN  
+	 CZ ZERO  
+;16                                  
+	 MVI A,16  
+	 ANA E  
+	 CNZ JEDEN  
+	 CZ ZERO  
+;8                                  
+	 MVI A,8  
+	 ANA E  
+	 CNZ JEDEN  
+	 CZ ZERO  
+;4                                  
+	 MVI A,4  
+	 ANA E  
+	 CNZ JEDEN  
+	 CZ ZERO  
+;2                                  
+	 MVI A,2  
+	 ANA E  
+	 CNZ JEDEN  
+	 CZ ZERO  
+;1       
+	 MVI A,1  
+	 ANA E  
+	 CNZ JEDEN  
+	 CZ ZERO  
+	
+	 LXI H,BIN
+         RST 3
+         MVI A,10  
+	 RST 1  
+	 MVI A,13  
+	 RST 1  
+
+
+
+;CZESC DEC  
+	 MOV A,E  
+	 CALL DZIELENIE  
+	 ADI 48  
+	 MOV H,A  
+	 PUSH H ;CYFRA JEDNOSCI  
+	 MOV A,D  
+	 MVI D,0  
+	 CALL DZIELENIE  
+	 ADI 48  
+	 MOV H,A  
+	 PUSH H ;CYFRA DZIESIATKI  
+	 MOV A,D  
+	 MVI D,0  
+	 CALL DZIELENIE  
+	 ADI 48  
+	 RST 1  
+	 POP H  
+	 MOV A,H  
+	 RST 1  
+	 POP H  
+	 MOV A,H  
+	 RST 1  
+	
+	 LXI H,DEC
+         RST 3
+         HLT ;KONIEC PROGRAMU  
+
+
+;CZAS NA PROCEDURY  
+DZIELENIE  
+KORBKA  
+	 INR D  
+	 SUI 10  
+	 JNC KORBKA  
+	 DCR D  
+	 ADI 10  
+	 RET  
+ZERO  
+	 MVI A,48  
+	 RST 1  
+	 RET  
+JEDEN  
+	 MVI A,49  
+	 RST 1  
+	 RET  
+EKSPERT ;zamienia kod znaku na cyfre szesnastkowa  
+	 CPI 97 ;badam kod znaku  
+	 JP MALA  
+	 CPI 65  
+	 JP DUZA  
+	 CPI 48  
+	 JP CYFRA  
+OGNISKO  
+	 RET  
+MALA 	 CPI 102  
+	 JP ZLY_ZNAK  
+	 SUI 87  
+	 MOV E,A  
+	 JMP OGNISKO  
+DUZA 	 CPI 70  
+	 JP ZLY_ZNAK  
+	 SUI 55  
+	 MOV E,A  
+	 JMP OGNISKO  
+CYFRA 	 CPI 57  
+	 JP ZLY_ZNAK  
+	 SUI 48  
+	 MOV E,A  
+	 JMP OGNISKO  
+ZLY_ZNAK  
+	 LXI H,KOMUNIKAT ; addres lancucha znakow  
+	 RST 3 ;wydruk lancucha  
+DATASEG  
+NAPIS 	 DB    ' Podaj liczbe hex dwucyfrowa:@'               
+KOMUNIKAT 	 DB 'Zly znak! KONIEC!@'
+BIN DB  ' bin @'
+DEC DB  ' dec @'
+HEX DB  ' hex @'          
