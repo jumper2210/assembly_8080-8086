@@ -1,0 +1,48 @@
+Progr           segment
+                assume  cs:Progr, ds:dane, ss:stosik
+
+start:         mov     ax,dane
+                mov     ds,ax
+                mov     ax,stosik
+                mov     ss,ax
+                mov     sp,offset szczyt
+
+;Program prints pyramid of letters
+mov ax,0b800h ;display address //adresacja natychmiastowa
+mov es,ax ;write to ES // adrsajca bezposrednia
+mov ax,0020 ;black blank // zapisujemy znak spacji
+mov cx,2000 ;number of characters on 80 * 25 line display // tyle znakow miesci sie w jednym ekranie 80 jedna linijka a 25 "eneterow"
+rep stosw ;repeat operation CX times of store word from AX at address ES:DI and increment DI by 2
+mov bx,25 ;repeat loop for a number of lines on screen
+print:
+	mov ax,char
+	mov di,pointer
+	mov cx,letter
+	rep stosw
+	add letter,2
+	inc char ;change to next letter in alphabet
+	add pointer,158;move to next line and chars left on next line
+	dec bx
+jnz print
+
+mov ah,4ch ;EXIT
+mov al,0
+int 21h
+
+
+Progr           ends
+
+dane            segment
+
+        char    dw 0F41h; 16 bit
+        letter dw 1
+        pointer dw 78
+
+dane            ends
+
+stosik          segment
+                dw    100h dup(0)
+szczyt          Label word
+stosik          ends
+
+end start
